@@ -9,7 +9,6 @@ use src\auth\models\accesstokenModel;
 use src\auth\classes\JWT;
 use src\auth\models\userModel;
 use src\core\db;
-use src\core\emailService;
 
 class authController extends baseController
 {
@@ -19,22 +18,6 @@ class authController extends baseController
             return helpers::formatResponse(400, 'Incomplete Authorization Header', $_SERVER);
         }
         return JWT::decode(JWT::maskToken($token, 'decrypt'));
-    }
-
-    public static function forgot(array $request): array
-    {
-        if (!self::isValidAccountInfo($request)) {
-            return helpers::formatResponse(400, 'Missing Account Info', []);
-        }
-
-        $result = self::getAllFilteredBase(new userModel(), ['email' => $request['email'], 'username' => $request['username']]);
-        if ($result['status'] === 200) {
-            $tmppwd = helpers::tmpPassword(12);
-            self::sendTmpPwd($result['data']['email'], $tmppwd);
-            $tmppwdhash = password_hash($tmppwd, PASSWORD_DEFAULT);
-            return self::modifyBase(new userModel(), ['id' => $result['data']['id'], 'password' => $tmppwdhash]);
-        }
-        return helpers::formatResponse(400, 'Missing Account Info', []);
     }
 
     public static function register(array $request): array
@@ -128,13 +111,6 @@ class authController extends baseController
     private static function deleteToken(string $token): array
     {
         return self::hardDeleteAllBase(new refreshtokenModel(), ['hash' => self::hashToken($token)]);
-    }
-
-    private static function sendTmpPwd(string $email, string $pwd): array
-    {
-        return emailService::sendTmpPwd($email, $pwd)
-            ? helpers::formatResponse(200, 'Mail Sent', [])
-            : helpers::formatResponse(401, 'Mail Not sent', []);
     }
 
     private static function isBearerTokenValid(string $authorizationHeader, &$token): bool

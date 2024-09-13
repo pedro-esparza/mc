@@ -74,12 +74,6 @@ class helpers
         return $return;
     }
 
-    public static function extractUsername(string $email): string
-    {
-        $exploted = explode('@', $email);
-        return $exploted[0];
-    }
-
     public static function is_hex($hex_code): bool
     {
         return @preg_match("/^[a-f0-9]{2,}$/i", $hex_code) && !(strlen($hex_code) & 1);
