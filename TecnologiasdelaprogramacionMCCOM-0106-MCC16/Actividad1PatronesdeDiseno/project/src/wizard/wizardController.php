@@ -3,30 +3,33 @@
 namespace src\wizard;
 
 use src\core\helpers;
-use src\wizard\db;
 
 class wizardController
 {
-    private static $conn;
-
     private static $filename = __DIR__ . '/mccsystem.sql';
 
-    public static function index()
+    public function index()
     {
+        $conn = db::connect();
 
-        self::$conn = db::connect();
+        if (!$conn) {
+            return helpers::formatResponse(500, 'Database connection error', []);
+        }
 
         $return = helpers::formatResponse(201, 'Not registered ' . db::get('WDB_NAME') . ' at: ' . db::get('WDB_HOST'), []);
 
-        if (is_object(self::$conn)) {
-
+        if (file_exists(self::$filename)) {
             $query = file_get_contents(self::$filename);
 
-            self::$conn->multi_query($query);
+            if ($conn->multi_query($query)) {
+                $return = helpers::formatResponse(200, 'Wizard complete!, DB: ' . db::get('WDB_NAME') . ', Host: ' . db::get('WDB_HOST'), []);
+            } else {
+                $return = helpers::formatResponse(500, 'Error executing query: ' . $conn->error, []);
+            }
 
-            self::$conn->close();
-
-            $return = helpers::formatResponse(200, 'Wizard complete!, DB: ' . db::get('WDB_NAME') . ', Host: ' . db::get('WDB_HOST'), []);
+            $conn->close();
+        } else {
+            $return = helpers::formatResponse(404, 'SQL file not found: ' . self::$filename, []);
         }
 
         return $return;

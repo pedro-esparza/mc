@@ -10,11 +10,11 @@ class baseController
 {
   public static function indexAction(): array
   {
-    return helpers::formatResponse(200, 'Let\'s start build something Incredible!', []);
+    return helpers::formatResponse(200, '¡Desarrollemos algo increible!', []);
   }
   public static function noActionFound(): array
   {
-    return helpers::formatResponse(404, 'No Action Found!', []);
+    return helpers::formatResponse(404, '¡Acción No encontrada!', []);
   }
 
   protected static function getAllBase(object $model): array

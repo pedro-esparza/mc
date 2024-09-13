@@ -6,33 +6,46 @@ use Exception;
 
 class db
 {
-	public static $_instance;
+	private static $_instance = null;
 	private static $WDB_HOST = 'localhost';
-
 	private static $WDB_USER = 'root';
-
 	private static $WDB_PASS = 'toor';
-
 	private static $WDB_NAME = 'mccsystem';
-
 	private static $WDB_PORT = '3306';
 
+	// Método para obtener cualquier configuración de base de datos
 	public static function get($key)
 	{
 		return self::${$key};
 	}
 
+	// Patrón Singleton para la conexión
 	public static function connect()
 	{
-		try {
+		// Si la instancia no ha sido creada, crearla
+		if (self::$_instance === null) {
+			try {
+				// Crear una nueva conexión mysqli
+				self::$_instance = new \mysqli(
+					self::get('WDB_HOST'),
+					self::get('WDB_USER'),
+					self::get('WDB_PASS'),
+					self::get('WDB_NAME'),
+					self::get('WDB_PORT')
+				);
 
-			self::$_instance = new \mysqli(self::get('WDB_HOST'), self::get('WDB_USER'), self::get('WDB_PASS'), self::get('WDB_NAME'));
-
-		} catch (Exception $e) {
-
-			self::$_instance = 'Connection error: ' . mysqli_connect_errno();
+				// Verificar si hubo errores de conexión
+				if (self::$_instance->connect_errno) {
+					throw new Exception('Connection error: ' . self::$_instance->connect_error);
+				}
+			} catch (Exception $e) {
+				// Manejo de errores en la conexión
+				error_log($e->getMessage());
+				return null; // Devolver null en caso de error
+			}
 		}
 
+		// Devolver la instancia de conexión
 		return self::$_instance;
 	}
 }

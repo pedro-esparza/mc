@@ -11,12 +11,12 @@ class helpers
 
     public static function indexAction(): array
     {
-        return self::formatResponse(200, 'Let\'s start build something Incredible!', []);
+        return self::formatResponse(200, '¡Desarrollemos algo increible!', []);
     }
 
     public static function noActionFound(): array
     {
-        return self::formatResponse(404, 'No Action Found!', []);
+        return self::formatResponse(404, '¡Acción No encontrada!', []);
     }
 
     public static function dye($value): void

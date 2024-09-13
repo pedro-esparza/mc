@@ -3,7 +3,7 @@
 namespace DesignPatternsAPI;
 
 use src\core\helpers;
-use src\auth\controllers\authController;
+use src\core\router;
 
 /*
 |--------------------------------------------------------------------------|
@@ -43,51 +43,16 @@ if (!empty($jsondata) && json_last_error() !== JSON_ERROR_NONE)
 */
 
 // Aquí usamos Singleton
-$router = \src\core\router::getInstance();
+$router = router::getInstance();
 
-$router->any(helpers::class . '::noActionFound');
-$router->get('/', helpers::class . '::indexAction');
+require 'src/core/routes.php';
 
-/*
-|--------------------------------------------------------------------------|
-| Auth                                                                     |
-|--------------------------------------------------------------------------|
-*/
-
-require 'routes_auth.inc.php';
-
-/*
-|--------------------------------------------------------------------------|
-| APP (logged)                                                             |
-|--------------------------------------------------------------------------|
-*/
-
-$auth = authController::authenticateAccessToken();
-
-if ($auth['status'] === 200) {
-
-  if (strtoupper($_SERVER['REQUEST_METHOD']) == 'GET') {
-
-    foreach (array_filter(explode('&', $_SERVER['QUERY_STRING'])) as $column) {
-      $query = array_filter(explode('=', $column));
-      if (isset($query[0]) && isset($query[1])) {
-        $request[$query[0]] = $query[1];
-      }
-    }
-  }
-
-  include_once 'routes_app.inc.php';
-}
 
 /*
 |--------------------------------------------------------------------------|
 | Launch                                                                   |
 |--------------------------------------------------------------------------|
 */
-
-$request['_FILES'] = isset($_FILES) ? $_FILES : array();
-$request['_REQUEST'] = isset($_REQUEST) ? $_REQUEST : array();
-$request['_USER'] = isset($auth['data']) ? $auth['data'] : array();
 
 $router->run($request, $_SERVER['REQUEST_METHOD']);
 $router = null;

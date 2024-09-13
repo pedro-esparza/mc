@@ -6,27 +6,23 @@ use src\core\helpers;
 
 class router
 {
-    private static $_instance = null; // Instancia estática para el Singleton
+    private static $_instance = null;
     private $noAction;
-    private array $controllers = []; // Asegurar que se inicializa como un array vacío
+    private array $controllers = [];
 
-    // Constructor privado para evitar la creación directa de instancias
     private function __construct()
     {
     }
 
-    // Evitar clonación de la instancia
     private function __clone()
     {
     }
 
-    // Evitar deserialización de la instancia
-    private function __wakeup()
+    public function __wakeup()
     {
     }
 
-    // Método para obtener la instancia Singleton de la clase router
-    public static function getInstance()
+    public static function getInstance(): object|null
     {
         if (self::$_instance === null) {
             self::$_instance = new self();
@@ -71,6 +67,7 @@ class router
 
     public function run(array $request, string $requestMethod)
     {
+        $requestMethod = strtoupper($requestMethod);
         $requestUri = parse_url($_SERVER['REQUEST_URI']);
         $requestPath = $requestUri['path'];
         $callback = null;
@@ -84,15 +81,36 @@ class router
 
         if (is_string($callback)) {
             $parts = explode('::', $callback);
-            if (is_array($parts)) {
+            if (count($parts) === 2) {
                 $className = array_shift($parts);
-                $controller = new $className;
-                $callback = [$controller, array_shift($parts)];
+                $methodName = array_shift($parts);
+
+                if (class_exists($className) && method_exists($className, $methodName)) {
+                    $controllerInstance = new $className;
+                    $callback = [$controllerInstance, $methodName];
+                } else {
+                    $callback = null;
+                }
             }
-        } else {
-            $callback = $this->noAction;
+        }
+
+        if ($callback === null) {
+            if ($this->noAction !== null) {
+                $callback = $this->noAction;
+            } else {
+                helpers::returnToAction($this->default404());
+                return;
+            }
         }
 
         helpers::returnToAction(call_user_func_array($callback, [$request]));
+    }
+
+    private function default404()
+    {
+        return [
+            'status' => 404,
+            'message' => 'Route not found'
+        ];
     }
 }
