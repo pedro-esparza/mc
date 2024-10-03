@@ -45,6 +45,7 @@ El algoritmo optimiza las siguientes funciones de benchmark:
 
 ```bash
 git clone https://github.com/pedro-esparza/MCC/tree/main/TecnologiasdelaprogramacionMCCOM-0106-MCC16
+path /Actividad2AlgoritmoGenetico
 cd AlgoritmoGenetico
 Paso 2: Instalar Dependencias
 Asegúrate de que PHP y la extensión pthreads están instalados:
