@@ -4,12 +4,6 @@ namespace src\api;
 
 class Helpers
 {
-    public static array $modules = ['category', 'customer', 'supplier', 'item'];
-
-    public static function validModule($module): bool
-    {
-        return in_array($module, self::$modules);
-    }
     public static function dye($value): void
     {
         echo '<pre>';
@@ -29,7 +23,6 @@ class Helpers
 
     public static function returnToAction(array $response): void
     {
-        echo 'okas';
         echo json_encode($response, http_response_code($response['status']));
     }
 
