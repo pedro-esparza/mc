@@ -4,6 +4,7 @@ require_once '../models/GeneticAlgorithm.php';
 require_once '../views/JsonResponse.php';
 require_once '../utils/Validator.php';
 
+
 class MessageController
 {
     public function decodeMessage()
