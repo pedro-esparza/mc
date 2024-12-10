@@ -10,7 +10,7 @@ class MessageController
 
     private static function decodificar($mensajeCodificado, $clave)
     {
-        return $clave; // En un caso real, aplica el mapeo usando la clave
+        return $clave;
     }
 
 
@@ -23,11 +23,9 @@ class MessageController
             $padre1 = $poblacion[array_rand($poblacion)];
             $padre2 = $poblacion[array_rand($poblacion)];
 
-            // Cruce
             $puntoCruce = random_int(0, strlen($padre1) - 1);
             $hijo = substr($padre1, 0, $puntoCruce) . substr($padre2, $puntoCruce);
 
-            // Mutación
             if (random_int(0, 100) / 100 <= $tasaMutacion) {
                 $indiceMutacion = random_int(0, strlen($hijo) - 1);
                 $hijo[$indiceMutacion] = $caracteres[random_int(0, strlen($caracteres) - 1)];
@@ -43,10 +41,8 @@ class MessageController
 
     private static function seleccionarMejores($poblacion, $fitnesses)
     {
-        // Ordenar población por fitness (mejor fitness primero)
         array_multisort($fitnesses, SORT_ASC, $poblacion);
 
-        // Seleccionar los mejores (50%)
         return array_slice($poblacion, 0, count($poblacion) / 2);
     }
 
@@ -84,7 +80,6 @@ class MessageController
     {
         $inicio = microtime(true);
 
-        // Generar población inicial
         $poblacion = self::generarPoblacionInicial($tamanoPoblacion, strlen($mensajeCodificado));
 
         $mejorFitness = PHP_INT_MAX;
@@ -93,12 +88,11 @@ class MessageController
 
         $generacionesSinMejora = 0;
 
-        // Evolución a través de generaciones
+
         for ($generacion = 0; $generacion < $generaciones; $generacion++) {
             $fitnesses = [];
             $nuevaMejora = false;
 
-            // Calcular el fitness de cada individuo
             foreach ($poblacion as $individuo) {
                 $fitness = self::calcularFitness($individuo, $mensajeCodificado, $mensajeOriginal);
                 $fitnesses[] = $fitness;
@@ -112,27 +106,22 @@ class MessageController
 
             $historialFitness[] = $mejorFitness;
 
-            // Verificar si hay estancamiento
             if ($nuevaMejora) {
                 $generacionesSinMejora = 0;
             } else {
                 $generacionesSinMejora++;
             }
 
-            // Diversificar si hay estancamiento
             if ($generacionesSinMejora > 10) {
-                $tasaMutacion = min(1.0, $tasaMutacion * 1.5); // Incrementar tasa de mutación
+                $tasaMutacion = min(1.0, $tasaMutacion * 1.5);
             } else {
-                $tasaMutacion = max(0.01, $tasaMutacion * 0.9); // Reducir tasa de mutación si mejora
+                $tasaMutacion = max(0.01, $tasaMutacion * 0.9);
             }
 
-            // Seleccionar mejores individuos
             $poblacion = self::seleccionarMejores($poblacion, $fitnesses);
 
-            // Aplicar cruce y mutación
             $poblacion = self::aplicarCruceYMutacion($poblacion, $tasaMutacion);
 
-            // Terminar temprano si alcanza el fitness perfecto
             if ($mejorFitness == 0) {
                 break;
             }
@@ -142,7 +131,7 @@ class MessageController
 
         return [
             'mensaje_decodificado' => $decodedMessage,
-            'fitness' => round(1 / (1 + $mejorFitness), 2), // Convertir fitness en una escala normalizada
+            'fitness' => round(1 / (1 + $mejorFitness), 2),
             'costo' => $mejorFitness,
             'historial_fitness' => $historialFitness,
             'tiempo_ejecucion' => (microtime(true) - $inicio) . 's',
@@ -175,14 +164,25 @@ class MessageController
 
     public static function getStatus(): array
     {
+        $uptime = shell_exec('uptime -p') ?: 'Uptime no disponible';
+
+        static $requestsHandled = 0;
+        $requestsHandled++;
+
+        $cpuUsage = sys_getloadavg()[0];
+        $memoryUsage = memory_get_usage(true);
+
         $result = [
             'status' => 'OK',
-            'uptime' => '2 days, 5 hours',
-            'requests_handled' => 1200
+            'uptime' => trim($uptime),
+            'requests_handled' => $requestsHandled,
+            'cpu_usage' => round($cpuUsage, 2) . '%',
+            'memory_usage' => round($memoryUsage / (1024 * 1024), 2) . 'MB'
         ];
 
         return Helpers::formatResponse(200, 'success', $result);
     }
+
 
     public static function getMetrics(): array
     {

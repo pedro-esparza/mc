@@ -1,0 +1,30 @@
+[
+    {
+        "mensaje_codificado": "qnnzo yqtdn",
+        "mensaje_original": "hello world",
+        "generaciones": 50,
+        "tamano_poblacion": 20,
+        "tasa_mutacion": 0.05
+    },
+    {
+        "mensaje_codificado": "zbyrx",
+        "mensaje_original": "tiger",
+        "generaciones": 100,
+        "tamano_poblacion": 30,
+        "tasa_mutacion": 0.1
+    },
+    {
+        "mensaje_codificado": "zbyrx",
+        "mensaje_original": "tiger",
+        "generaciones": 200,
+        "tamano_poblacion": 50,
+        "tasa_mutacion": 0.07
+    },
+    {
+        "mensaje_codificado": "zbyrx",
+        "mensaje_original": "tiger",
+        "generaciones": 200,
+        "tamano_poblacion": 50,
+        "tasa_mutacion": 0.05
+    }
+]
