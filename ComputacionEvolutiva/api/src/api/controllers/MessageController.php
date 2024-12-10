@@ -40,6 +40,7 @@ class MessageController
     }
 
 
+
     private static function seleccionarMejores($poblacion, $fitnesses)
     {
         // Ordenar población por fitness (mejor fitness primero)
@@ -88,12 +89,14 @@ class MessageController
 
         $mejorFitness = PHP_INT_MAX;
         $mejorIndividuo = '';
-
         $historialFitness = [];
 
-        // Evolucionar a través de generaciones
+        $generacionesSinMejora = 0;
+
+        // Evolución a través de generaciones
         for ($generacion = 0; $generacion < $generaciones; $generacion++) {
             $fitnesses = [];
+            $nuevaMejora = false;
 
             // Calcular el fitness de cada individuo
             foreach ($poblacion as $individuo) {
@@ -103,16 +106,36 @@ class MessageController
                 if ($fitness < $mejorFitness) {
                     $mejorFitness = $fitness;
                     $mejorIndividuo = $individuo;
+                    $nuevaMejora = true;
                 }
             }
 
             $historialFitness[] = $mejorFitness;
+
+            // Verificar si hay estancamiento
+            if ($nuevaMejora) {
+                $generacionesSinMejora = 0;
+            } else {
+                $generacionesSinMejora++;
+            }
+
+            // Diversificar si hay estancamiento
+            if ($generacionesSinMejora > 10) {
+                $tasaMutacion = min(1.0, $tasaMutacion * 1.5); // Incrementar tasa de mutación
+            } else {
+                $tasaMutacion = max(0.01, $tasaMutacion * 0.9); // Reducir tasa de mutación si mejora
+            }
 
             // Seleccionar mejores individuos
             $poblacion = self::seleccionarMejores($poblacion, $fitnesses);
 
             // Aplicar cruce y mutación
             $poblacion = self::aplicarCruceYMutacion($poblacion, $tasaMutacion);
+
+            // Terminar temprano si alcanza el fitness perfecto
+            if ($mejorFitness == 0) {
+                break;
+            }
         }
 
         $decodedMessage = self::decodificar($mensajeCodificado, $mejorIndividuo);
@@ -129,6 +152,7 @@ class MessageController
             ]
         ];
     }
+
 
     public static function decodeMessage(): array
     {
