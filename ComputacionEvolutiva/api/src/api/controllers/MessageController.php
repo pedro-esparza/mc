@@ -80,14 +80,16 @@ class MessageController
     {
         $inicio = microtime(true);
 
+        $memoryStart = memory_get_usage(true);
+
         $poblacion = self::generarPoblacionInicial($tamanoPoblacion, strlen($mensajeCodificado));
 
         $mejorFitness = PHP_INT_MAX;
         $mejorIndividuo = '';
         $historialFitness = [];
-
         $generacionesSinMejora = 0;
 
+        $cpuStart = getrusage();
 
         for ($generacion = 0; $generacion < $generaciones; $generacion++) {
             $fitnesses = [];
@@ -119,13 +121,18 @@ class MessageController
             }
 
             $poblacion = self::seleccionarMejores($poblacion, $fitnesses);
-
             $poblacion = self::aplicarCruceYMutacion($poblacion, $tasaMutacion);
 
             if ($mejorFitness == 0) {
                 break;
             }
         }
+
+        $memoryEnd = memory_get_peak_usage(true);
+
+        $cpuEnd = getrusage();
+        $cpuTime = ($cpuEnd['ru_utime.tv_sec'] - $cpuStart['ru_utime.tv_sec']) +
+            (($cpuEnd['ru_utime.tv_usec'] - $cpuStart['ru_utime.tv_usec']) / 1e6);
 
         $decodedMessage = self::decodificar($mensajeCodificado, $mejorIndividuo);
 
@@ -136,11 +143,12 @@ class MessageController
             'historial_fitness' => $historialFitness,
             'tiempo_ejecucion' => (microtime(true) - $inicio) . 's',
             'uso_recursos' => [
-                'cpu' => '65%',
-                'memoria' => '120MB'
+                'cpu' => round($cpuTime, 2) . 's',
+                'memoria' => round($memoryEnd / (1024 * 1024), 2) . 'MB'
             ]
         ];
     }
+
 
 
     public static function decodeMessage(): array
